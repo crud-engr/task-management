@@ -2,16 +2,17 @@ import { sequelize } from '../../../config/database';
 import type { MigrationModule } from '../types';
 
 /**
- * Creates the tenants table in the public schema to track tenant schemas.
+ * Creates the organizations table in the public schema.
+ * Tracks organizations and their dedicated PostgreSQL schema (multi-tenant).
  */
-export const createTenantsTable: MigrationModule = {
-  name: '001-create-tenants-table',
+export const createOrganizationsTable: MigrationModule = {
+  name: '001-create-organizations-table',
   async up(ctx) {
     await sequelize.query(
-      `CREATE TABLE IF NOT EXISTS tenants (
+      `CREATE TABLE IF NOT EXISTS organizations (
         id VARCHAR(255) NOT NULL PRIMARY KEY,
-        schema_name VARCHAR(63) NOT NULL UNIQUE,
         name VARCHAR(255),
+        schema_name VARCHAR(63) NOT NULL UNIQUE,
         created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
       )`,
@@ -19,7 +20,7 @@ export const createTenantsTable: MigrationModule = {
     );
   },
   async down(ctx) {
-    await sequelize.query(`DROP TABLE IF EXISTS tenants`, {
+    await sequelize.query(`DROP TABLE IF EXISTS organizations`, {
       transaction: ctx.transaction,
     });
   },

@@ -1,3 +1,4 @@
+import './models';
 import { createApp } from './app';
 import { appConfig, sequelize, redis } from './config';
 import { migrateAll } from './database/migrations';
