@@ -1,37 +1,13 @@
 {
   "name": "task-management",
-  "version": "1.0.0",
-  "description": "Task management API with Express, Sequelize, PostgreSQL, Bull and Redis",
-  "main": "dist/index.js",
+  "private": true,
+  "description": "Task management app: backend API and frontend",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "nodemon",
-    "dev:ts-node": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": ["task-management", "express", "sequelize", "postgresql", "bull", "redis"],
-  "author": "",
-  "license": "ISC",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "bull": "^4.12.0",
-    "express": "^4.21.0",
-    "ioredis": "^5.4.1",
-    "pg": "^8.13.0",
-    "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.0",
-    "dotenv": "^16.4.5"
+    "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
+    "install:all": "npm install --prefix backend && npm install --prefix frontend",
+    "setup": "npm install && npm run install:all"
   },
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.9.0",
-    "@types/pg": "^8.11.6",
-    "ts-node": "^10.9.2",
-    "nodemon": "^3.1.7",
-    "ts-node-dev": "^2.0.0",
-    "typescript": "^5.6.3"
+    "concurrently": "^9.1.0"
   }
 }

@@ -1,8 +1,12 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
 import path from 'path';
 import type { AppConfig, DatabaseConfig, RedisConfig } from '../interfaces';
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+const backendRoot = path.resolve(__dirname, '../..');
+const envPath = path.join(backendRoot, '.env');
+const altEnvPath = path.join(process.cwd(), 'backend', '.env');
+dotenv.config({ path: fs.existsSync(envPath) ? envPath : altEnvPath });
 
 function getEnv(key: string, defaultValue?: string): string {
   const value = process.env[key] ?? defaultValue;
@@ -40,6 +44,9 @@ export const databaseConfig: DatabaseConfig = {
   password: getEnv('DB_PASSWORD', ''),
   dialect: 'postgres',
   logging: getEnvBool('DB_LOGGING', false),
+  ssl: getEnvBool('DB_SSL', false),
+  sslRejectUnauthorized: getEnvBool('DB_SSL_REJECT_UNAUTHORIZED', true),
+  defaultSchema: process.env.DB_DEFAULT_SCHEMA || 'public',
 };
 
 export const redisConfig: RedisConfig = {
