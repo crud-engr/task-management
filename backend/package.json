@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "nodemon",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:create": "ts-node src/scripts/create-database.ts",
+    "db:init": "ts-node src/scripts/init-db.ts"
   },
   "keywords": ["task-management", "express", "sequelize", "postgresql", "redis"],
   "author": "",

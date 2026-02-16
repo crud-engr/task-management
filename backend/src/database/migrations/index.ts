@@ -2,14 +2,16 @@ export { runMigrationsDown, runMigrationsUp, runTenantMigrations } from './runne
 export type { MigrationContext, MigrationModule } from './types';
 
 import { runMigrationsUp } from './runner';
-import { createTenantsTable } from './global/001-create-tenants-table';
-import { createTasksTable } from './tenant/001-create-tasks-table';
+import { createOrganizationsTable } from './global/001-create-organizations-table';
+import { createUsersTable } from './tenant/001-create-users-table';
+import { createTasksTable } from './tenant/002-create-tasks-table';
+import { alterTasksAddUserId } from './tenant/003-alter-tasks-add-user-id';
 
 /** Global migrations (public schema) */
-export const globalMigrations = [createTenantsTable];
+export const globalMigrations = [createOrganizationsTable];
 
-/** Tenant migrations (run per tenant schema) */
-export const tenantMigrations = [createTasksTable];
+/** Tenant migrations (run per tenant schema; order: users, tasks, then alter) */
+export const tenantMigrations = [createUsersTable, createTasksTable, alterTasksAddUserId];
 
 /**
  * Run all global migrations, then create and migrate the given tenant schemas.
