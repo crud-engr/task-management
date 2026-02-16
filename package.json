@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "nodemon",
+    "dev:ts-node": "ts-node-dev --respawn --transpile-only src/index.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": ["task-management", "express", "sequelize", "postgresql", "bull", "redis"],
@@ -29,6 +30,7 @@
     "@types/node": "^22.9.0",
     "@types/pg": "^8.11.6",
     "ts-node": "^10.9.2",
+    "nodemon": "^3.1.7",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.6.3"
   }
