@@ -18,6 +18,9 @@ export interface DatabaseConfig {
   password: string;
   dialect: 'postgres';
   logging: boolean;
+  ssl?: boolean;
+  sslRejectUnauthorized?: boolean;
+  defaultSchema?: string;
 }
 
 export interface RedisConfig {

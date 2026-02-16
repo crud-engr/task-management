@@ -1,12 +1,26 @@
 import { createApp } from './app';
 import { appConfig, sequelize, redis } from './config';
+import { migrateAll } from './database/migrations';
 
 const app = createApp();
+
+function getTenantSchemas(): string[] {
+  const raw = process.env.TENANT_SCHEMAS;
+  if (!raw) return [];
+  return raw.split(',').map((s) => s.trim()).filter(Boolean);
+}
 
 async function startServer(): Promise<void> {
   try {
     await sequelize.authenticate();
     console.log('Database connection established');
+
+    const tenantSchemas = getTenantSchemas();
+    const { global: globalRan, tenants: tenantRan } = await migrateAll(tenantSchemas);
+    if (globalRan.length) console.log('Migrations (global):', globalRan.join(', '));
+    for (const [schema, ran] of Object.entries(tenantRan)) {
+      if (ran.length) console.log(`Migrations (${schema}):`, ran.join(', '));
+    }
   } catch (err) {
     console.warn('Database connection failed:', (err as Error).message);
   }

@@ -1,48 +1,24 @@
 # task-management
 
-TypeScript-based task management API with Express, Sequelize, PostgreSQL, Bull and Redis.
+Task management app: backend API and frontend.
 
-## Setup
+## Structure
 
-1. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-2. **Environment**
-   ```bash
-   cp .env.example .env
-   ```
-   Edit `.env` and set `DB_PASSWORD` and any other values (PostgreSQL and Redis must be running).
-
-3. **Run**
-   ```bash
-   npm run dev    # development (ts-node-dev)
-   npm run build && npm start   # production
-   ```
-
-## Scripts
-
-| Script      | Description                |
+| Directory   | Description                |
 |------------|----------------------------|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Compile TypeScript to `dist/` |
-| `npm start` | Run compiled app             |
-| `npm run typecheck` | Type-check without emitting |
+| `backend/` | Express API (Sequelize, PostgreSQL, Redis). See [backend/README.md](backend/README.md). |
+| `frontend/`| React + Vite app. See [frontend/README.md](frontend/README.md). |
 
-## Project structure
+## Quick start
 
-```
-src/
-├── index.ts          # Entry point, starts server
-├── app.ts            # Express app creation
-├── config/           # Env, database, Redis
-├── interfaces/       # Shared TypeScript interfaces
-├── routes/           # API routes (e.g. /api/health)
-└── queues/           # Bull queue setup
+**Single command** (starts both backend and frontend):
+
+```bash
+npm run setup   # first time only
+npm run dev     # start both apps
 ```
 
-## API
+- **Backend**: http://localhost:3000
+- **Frontend**: http://localhost:5173
 
-- `GET /api` – API info
-- `GET /api/health` – Health check (DB + Redis status)
+**Prerequisites**: PostgreSQL and Redis must be running. Copy `backend/.env.example` to `backend/.env` and set `DB_PASSWORD` and other values.
