@@ -2,7 +2,9 @@
  * Application-level interfaces and type declarations
  */
 
-import { Request } from 'express';
+import type { Request } from 'express';
+import type { OrganizationInstance } from '../models/Organization';
+import type { UserInstance } from '../models/User';
 
 export interface AppConfig {
   env: string;
@@ -45,7 +47,11 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 }
 
 export interface AuthenticatedRequest extends Request {
+  tenantId?: string;
   userId?: string;
+  tenant?: OrganizationInstance;
+  schemaName?: string;
+  user?: UserInstance;
 }
 
 export interface HealthStatus {
