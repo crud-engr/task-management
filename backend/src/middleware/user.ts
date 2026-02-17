@@ -1,13 +1,10 @@
-/**
- * Loads user in the tenant schema and attaches to request.
- * Uses runInSchema so User is queried in the tenant's schema.
- * Requires loadTenant (and optionally extractUserId + requireUserId) to have run first.
- */
 
 import type { Request, Response, NextFunction } from 'express';
+import { QueryTypes } from 'sequelize';
 import type { AuthenticatedRequest } from '../interfaces';
 import type { ApiResponse } from '../interfaces';
-import { User } from '../models/User';
+import type { UserInstance } from '../models/User';
+import { sequelize } from '../config/database';
 import { runInSchema } from '../database/schema';
 
 export async function loadUser(
@@ -38,14 +35,19 @@ export async function loadUser(
   }
 
   try {
-    const user = await runInSchema(schemaName, async (transaction) => {
-      return User.findOne({
-        where: { id: userId },
-        transaction,
-      });
+    const row = await runInSchema(schemaName, async (transaction) => {
+      const rows = await sequelize.query<UserInstance>(
+        'SELECT id, name, email, role, created_at, updated_at FROM users WHERE id = :id LIMIT 1',
+        {
+          replacements: { id: userId },
+          transaction,
+          type: QueryTypes.SELECT,
+        }
+      );
+      return rows[0] ?? null;
     });
 
-    if (!user) {
+    if (!row) {
       const body: ApiResponse = {
         success: false,
         error: 'User not found',
@@ -54,7 +56,7 @@ export async function loadUser(
       return;
     }
 
-    authReq.user = user;
+    authReq.user = row as UserInstance;
     next();
   } catch (err) {
     next(err);
