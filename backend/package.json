@@ -9,7 +9,8 @@
     "dev": "nodemon",
     "typecheck": "tsc --noEmit",
     "db:create": "ts-node src/scripts/create-database.ts",
-    "db:init": "ts-node src/scripts/init-db.ts"
+    "db:init": "ts-node src/scripts/init-db.ts",
+    "db:seed-test": "ts-node src/scripts/seed-test-data.ts"
   },
   "keywords": ["task-management", "express", "sequelize", "postgresql", "redis"],
   "author": "",

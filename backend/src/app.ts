@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from 'express';
 import routes from './routes';
 import type { ApiResponse } from './interfaces';
+import { extractTenantId, extractUserId } from './middleware';
 
 export function createApp(): Express {
   const app = express();
@@ -8,7 +9,7 @@ export function createApp(): Express {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use('/api', routes);
+  app.use('/api', extractTenantId, extractUserId, routes);
 
   app.use((res: Response) => {
     const response: ApiResponse = {

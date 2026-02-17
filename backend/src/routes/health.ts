@@ -4,7 +4,7 @@ import type { HealthStatus } from '../interfaces';
 
 const router = Router();
 
-router.get('/', async (res: Response): Promise<void> => {
+router.get('/', async (_req: Request, res: Response): Promise<void> => {
   const [database, redis] = await Promise.all([
     testDatabaseConnection(),
     testRedisConnection(),
