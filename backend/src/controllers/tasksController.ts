@@ -19,6 +19,16 @@ const ALLOWED_STATUSES: readonly string[] = [TASK_STATUS.PENDING, TASK_STATUS.CO
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+interface TaskRow {
+  id: string;
+  title: string;
+  description: string | null;
+  status: string;
+  user_id: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
 function isValidUuid(id: string): boolean {
   return UUID_REGEX.test(id);
 }
@@ -31,15 +41,7 @@ export async function listTasks(
   const schemaName = req.schemaName!;
   try {
     const tasks = await runInSchema(schemaName, async (transaction) => {
-      return sequelize.query<{
-        id: string;
-        title: string;
-        description: string | null;
-        status: string;
-        user_id: string;
-        created_at: Date;
-        updated_at: Date;
-      }>(
+      return sequelize.query<TaskRow>(
         `SELECT id, title, description, status, user_id, created_at, updated_at
          FROM tasks
          ORDER BY created_at DESC`,
@@ -91,15 +93,7 @@ export async function createTask(
 
   try {
     const task = await runInSchema(schemaName, async (transaction) => {
-      const rows = await sequelize.query<{
-        id: string;
-        title: string;
-        description: string | null;
-        status: string;
-        user_id: string;
-        created_at: Date;
-        updated_at: Date;
-      }>(
+      const rows = await sequelize.query<TaskRow>(
         `INSERT INTO tasks (title, description, status, user_id)
          VALUES (:title, :description, :status, :user_id)
          RETURNING id, title, description, status, user_id, created_at, updated_at`,
@@ -154,15 +148,7 @@ export async function completeTask(
 
   try {
     const result = await runInSchema(schemaName, async (transaction) => {
-      const rows = await sequelize.query<{
-        id: string;
-        title: string;
-        description: string | null;
-        status: string;
-        user_id: string;
-        created_at: Date;
-        updated_at: Date;
-      }>(
+      const rows = await sequelize.query<TaskRow>(
         `UPDATE tasks SET status = :status, updated_at = NOW() WHERE id = :id RETURNING id, title, description, status, user_id, created_at, updated_at`,
         {
           replacements: { status, id },

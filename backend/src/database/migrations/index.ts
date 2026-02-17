@@ -3,12 +3,13 @@ export type { MigrationContext, MigrationModule } from './types';
 
 import { runMigrationsUp } from './runner';
 import { createOrganizationsTable } from './global/001-create-organizations-table';
+import { createJobStatusTable } from './global/002-create-job-status-table';
 import { createUsersTable } from './tenant/001-create-users-table';
 import { createTasksTable } from './tenant/002-create-tasks-table';
 import { alterTasksAddUserId } from './tenant/003-alter-tasks-add-user-id';
 
 /** Global migrations (public schema) */
-export const globalMigrations = [createOrganizationsTable];
+export const globalMigrations = [createOrganizationsTable, createJobStatusTable];
 
 /** Tenant migrations (run per tenant schema; order: users, tasks, then alter) */
 export const tenantMigrations = [createUsersTable, createTasksTable, alterTasksAddUserId];
