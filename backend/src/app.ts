@@ -1,4 +1,5 @@
 import express, { Express, Request, Response } from 'express';
+import cors from 'cors';
 import routes from './routes';
 import type { ApiResponse } from './interfaces';
 import { extractTenantId, extractUserId } from './middleware';
@@ -6,6 +7,10 @@ import { extractTenantId, extractUserId } from './middleware';
 export function createApp(): Express {
   const app = express();
 
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    credentials: true,
+  }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 

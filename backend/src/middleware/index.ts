@@ -12,6 +12,7 @@ export { extractTenantId, requireTenantId } from './tenantId';
 export { extractUserId, requireUserId } from './userId';
 export { loadTenant } from './tenant';
 export { loadUser } from './user';
+export { requireAdmin } from './requireAdmin';
 
 export const requireTenant: RequestHandler[] = [
   extractTenantId,

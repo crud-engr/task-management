@@ -14,12 +14,20 @@ const createApiClient = (): AxiosInstance => {
     },
   })
 
-  // Request interceptor
+  // Request interceptor: auth token + tenant/user headers for API
   client.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('authToken')
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
+      }
+      const tenantId = localStorage.getItem('tenantId')
+      if (tenantId) {
+        config.headers['x-tenant-id'] = tenantId
+      }
+      const userId = localStorage.getItem('userId')
+      if (userId) {
+        config.headers['x-user-id'] = userId
       }
       return config
     },
@@ -159,11 +167,13 @@ class ApiClient {
    */
   private handleError(error: unknown): ApiError {
     if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<{ message?: string; errors?: Record<string, string[]> }>
+      const axiosError = error as AxiosError<{ message?: string; error?: string; errors?: Record<string, string[]> }>
+      const data = axiosError.response?.data
+      const message = data?.message ?? data?.error ?? axiosError.message ?? 'An error occurred'
       return {
-        message: axiosError.response?.data?.message || axiosError.message || 'An error occurred',
+        message,
         status: axiosError.response?.status || 500,
-        errors: axiosError.response?.data?.errors,
+        errors: data?.errors,
       }
     }
     return {

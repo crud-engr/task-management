@@ -5,12 +5,18 @@ import { runMigrationsUp } from './runner';
 import { createOrganizationsTable } from './global/001-create-organizations-table';
 import { createJobStatusTable } from './global/002-create-job-status-table';
 import { createExportsTable } from './global/003-create-exports-table';
+import { alterOrganizationsIdToUuid } from './global/004-alter-organizations-id-to-uuid';
 import { createUsersTable } from './tenant/001-create-users-table';
 import { createTasksTable } from './tenant/002-create-tasks-table';
 import { alterTasksAddUserId } from './tenant/003-alter-tasks-add-user-id';
 
 /** Global migrations (public schema) */
-export const globalMigrations = [createOrganizationsTable, createJobStatusTable, createExportsTable];
+export const globalMigrations = [
+  createOrganizationsTable,
+  createJobStatusTable,
+  createExportsTable,
+  alterOrganizationsIdToUuid,
+];
 
 /** Tenant migrations (run per tenant schema; order: users, tasks, then alter) */
 export const tenantMigrations = [createUsersTable, createTasksTable, alterTasksAddUserId];
