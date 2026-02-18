@@ -8,9 +8,14 @@ import { appQueue } from './queue';
 import type { JobDataMap, JobType } from './types';
 import { JOB_STATUS } from './types';
 import { updateJobStatus } from '../models';
+import { processTasksExport } from './processors/tasksExportProcessor';
+import { processCleanupExportFile } from './processors/cleanupExportFileProcessor';
 
 /** Map of job type to processor function */
-const processors: Partial<Record<JobType, (job: Job) => Promise<void>>> = {};
+const processors: Partial<Record<JobType, (job: Job) => Promise<void>>> = {
+  'tasks-export': processTasksExport as (job: Job) => Promise<void>,
+  'cleanup-export-file': processCleanupExportFile as (job: Job) => Promise<void>,
+};
 
 /** Process a single job with status tracking */
 async function handleJob(job: Job): Promise<void> {
@@ -37,7 +42,9 @@ async function handleJob(job: Job): Promise<void> {
  * Register the job processor on the app queue.
  */
 export function setupJobProcessor(): void {
-  appQueue.process(handleJob);
+  for (const jobName of Object.keys(processors)) {
+    appQueue.process(jobName, handleJob);
+  }
 
   appQueue.on('failed', (job, err) => {
     console.error(`Job ${job?.id} failed:`, err?.message);

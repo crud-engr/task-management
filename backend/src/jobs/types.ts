@@ -7,6 +7,13 @@ export type JobType = string;
 
 /** Job data payload by job type */
 export interface JobDataMap {
+  'tasks-export': {
+    exportId: string;
+    schemaName: string;
+  };
+  'cleanup-export-file': {
+    filePath: string;
+  };
   [key: string]: Record<string, unknown>;
 }
 

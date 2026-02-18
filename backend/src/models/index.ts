@@ -2,6 +2,7 @@ import { Organization } from './Organization';
 import { User } from './User';
 import { Task } from './Task';
 import { JobStatus } from './JobStatus';
+import { Export } from './Export';
 
 /**
  * Model associations:
@@ -15,12 +16,14 @@ function setupAssociations(): void {
 
 setupAssociations();
 
-export { Organization, User, Task, JobStatus };
+export { Organization, User, Task, JobStatus, Export };
 export type { UserRole, TaskStatus } from './types';
 export type { OrganizationAttributes, OrganizationCreationAttributes } from './Organization';
 export type { UserAttributes, UserCreationAttributes } from './User';
 export type { TaskAttributes, TaskCreationAttributes } from './Task';
 export type { JobStatusAttributes, JobStatusCreationAttributes } from './JobStatus';
+export type { ExportAttributes, ExportCreationAttributes, ExportStatus } from './Export';
+export { EXPORT_STATUS } from './Export';
 export {
   createJobStatus,
   updateJobStatus,

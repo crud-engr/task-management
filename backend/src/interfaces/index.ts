@@ -10,6 +10,7 @@ export interface AppConfig {
   env: string;
   port: number;
   nodeEnv: string;
+  exportStoragePath: string;
 }
 
 export interface DatabaseConfig {
