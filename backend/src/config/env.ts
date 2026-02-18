@@ -30,10 +30,13 @@ function getEnvBool(key: string, defaultValue: boolean): boolean {
   return value.toLowerCase() === 'true' || value === '1';
 }
 
+const defaultExportStorage = path.join(backendRoot, 'data', 'exports');
+
 export const appConfig: AppConfig = {
   env: getEnv('NODE_ENV', 'development'),
   port: getEnvNumber('PORT', 3000),
   nodeEnv: getEnv('NODE_ENV', 'development'),
+  exportStoragePath: process.env.EXPORT_STORAGE_PATH || defaultExportStorage,
 };
 
 export const databaseConfig: DatabaseConfig = {
