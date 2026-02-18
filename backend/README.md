@@ -8,7 +8,7 @@ TypeScript-based REST API for the Task Management app: Express, Sequelize (Postg
 
 - Node.js 18+
 - PostgreSQL (running)
-- Redis (running)
+- Redis (running) — see [Redis Setup](../README.md#redis-setup) in the root README for install and run instructions.
 
 ---
 
@@ -83,6 +83,8 @@ Creates or finds the tenant schema `org_test`, an organization, and an admin use
   - `createSchema`, `ensureSchema`, `schemaExists`, `dropSchema`, `validateSchemaName`.
 - **Migrations**: `src/database/migrations/` — global migrations (e.g. organizations, exports in `public`) and tenant migrations (e.g. users, tasks per schema). Migrations run on app startup. Set `TENANT_SCHEMAS` to create and migrate tenant schemas on startup.
 
+For creating new tenants beyond the seed, see the [Tenant creation guide](../README.md#tenant-creation-guide) in the root README.
+
 ---
 
 ## Jobs (Bull + Redis)
@@ -90,7 +92,7 @@ Creates or finds the tenant schema `org_test`, an organization, and an admin use
 - **tasks-export**: loads tasks from the tenant schema, writes a UTF-8 CSV to disk, updates the export record, then enqueues a delayed cleanup job.
 - **cleanup-export-file**: runs after 1 minute and deletes the CSV file. The download URL (`GET /api/exports/:id/file`) is valid for **1 minute**; after that, requests return 404.
 
-See the [root README](../README.md) for full API and export behaviour.
+See the [root README](../README.md) for full API and export behaviour. For step-by-step export testing, see [Testing the export feature](../README.md#testing-the-export-feature).
 
 ---
 

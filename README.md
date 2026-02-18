@@ -8,9 +8,12 @@ A full-stack task management application with a React frontend and an Express AP
 
 - [Project Structure](#project-structure)
 - [Prerequisites](#prerequisites)
+- [Redis Setup](#redis-setup)
 - [Local Setup](#local-setup)
 - [Running the Application](#running-the-application)
 - [Seeding Test Data](#seeding-test-data)
+- [Tenant Creation Guide](#tenant-creation-guide)
+- [Testing the Export Feature](#testing-the-export-feature)
 - [Technical Documentation](#technical-documentation)
   - [Authentication](#authentication)
   - [Task Management](#task-management)
@@ -37,9 +40,41 @@ A full-stack task management application with a React frontend and an Express AP
 
 - **Node.js** 18 or higher
 - **PostgreSQL** (running locally or remotely)
-- **Redis** (for job queues)
+- **Redis** (for job queues; used by Bull for export and cleanup jobs)
 
-Ensure PostgreSQL and Redis are running before starting the app.
+Ensure PostgreSQL and Redis are running before starting the app. See [Redis Setup](#redis-setup) below for how to install and run Redis.
+
+---
+
+## Redis Setup
+
+The backend uses Redis for the Bull job queue (tasks export and file cleanup). Default connection: `localhost:6379`. Override with `REDIS_HOST`, `REDIS_PORT`, and related env vars in `backend/.env` if needed.
+
+### Install and run Redis
+
+**macOS (Homebrew)**
+
+```bash
+brew install redis
+brew services start redis   # start and run in background
+# Or run in foreground: redis-server
+```
+
+**Linux (apt)**
+
+```bash
+sudo apt update
+sudo apt install redis-server
+sudo systemctl start redis-server
+sudo systemctl enable redis-server   # optional: start on boot
+```
+
+**Verify Redis is running**
+
+```bash
+redis-cli ping
+# Expected: PONG
+```
 
 ---
 
@@ -155,6 +190,105 @@ The seed creates:
 - One admin user: `admin@example.com` (role: `admin`)
 
 You can then sign in in the UI and test task listing/creation/completion and, as admin, CSV export.
+
+---
+
+## Tenant Creation Guide
+
+To add a **new tenant** (organization) beyond the seeded `org_test`:
+
+### 1. Choose a schema name
+
+Use a valid PostgreSQL schema name: alphanumeric and underscores only (e.g. `org_acme`, `org_company2`). Each tenant has one dedicated schema.
+
+### 2. Create and migrate the tenant schema
+
+From the **backend** directory, set `TENANT_SCHEMAS` to include the new schema (plus any existing ones), then run migrations:
+
+```bash
+# In backend/.env, set for example:
+# TENANT_SCHEMAS=org_test,org_acme
+
+npm run db:init
+```
+
+This creates the schema if it does not exist and runs all tenant migrations (users, tasks tables) inside it.
+
+### 3. Register the organization
+
+Insert a row into the `organizations` table so the API can resolve `x-tenant-id` to this schema. From the project root you can use `psql` (or any PostgreSQL client) connected to your database:
+
+```sql
+INSERT INTO public.organizations (id, name, schema_name, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'Acme Corp',
+  'org_acme',
+  NOW(),
+  NOW()
+)
+RETURNING id, name, schema_name;
+```
+
+**Copy the returned `id` (UUID)** — this is the **Tenant ID** clients send in the `x-tenant-id` header.
+
+### 4. Add users (optional)
+
+To allow sign-in for this tenant, add users in the tenant schema. For example, one admin user:
+
+```sql
+SET search_path TO org_acme;
+
+INSERT INTO users (id, name, email, role, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'Admin User',
+  'admin@acme.com',
+  'admin',
+  NOW(),
+  NOW()
+)
+RETURNING id, email, role;
+```
+
+Use the returned user `id` as **User ID** for login (together with the Tenant ID from step 3).
+
+**Summary:** New tenant = new schema name → add to `TENANT_SCHEMAS` and run `npm run db:init` → insert into `organizations` → optionally insert users into the tenant schema.
+
+---
+
+## Testing the Export Feature
+
+Follow these steps to verify the CSV export flow end-to-end.
+
+### Prerequisites
+
+- Backend and frontend running (`npm run dev` from project root).
+- PostgreSQL and Redis running; backend `.env` configured.
+- Test data seeded (`npm run db:seed-test` from backend); note the **Tenant ID** and **User ID**.
+
+### Steps
+
+1. **Log in as admin**  
+   Open the frontend (e.g. http://localhost:5173). On the login page (or Dev Login), enter the Tenant ID and User ID from the seed output. The seeded user has role `admin`, so the Export section will be visible.
+
+2. **Trigger an export**  
+   In the "Export CSV" section, click the button to start an export. The UI should show a pending/loading state.
+
+3. **Wait for completion**  
+   The frontend polls `GET /api/exports/:id` every 2 seconds. Wait until the status shows **completed** (or **failed**). For a small task list this usually takes a few seconds.
+
+4. **Download the file**  
+   When status is **completed**, a download link appears. Click it to download the CSV. Confirm the file opens and contains the expected task columns (e.g. id, title, description, status, user_id, created_at, updated_at).
+
+5. **Verify 1-minute expiry (optional)**  
+   After the export completes, the file is deleted from the server **1 minute** later. Wait at least 1 minute, then try opening the same download URL again (or refresh and click the link again). The request should return **404** (file not found). The export record may still show `completed`, but the file is no longer available.
+
+### Troubleshooting
+
+- **Export stays "pending"** — Ensure Redis is running (`redis-cli ping`). The export job runs via Bull; if Redis is down, jobs do not run.
+- **403 on export** — Only users with role `admin` can trigger exports. Use the seeded admin user or a user created with `role = 'admin'` in the tenant schema.
+- **404 on download** — The file is removed 1 minute after creation. Trigger a new export and download within that window.
 
 ---
 
