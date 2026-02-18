@@ -23,7 +23,8 @@ const Organization = sequelize.define<OrganizationInstance>(
   'Organization',
   {
     id: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
     name: {
