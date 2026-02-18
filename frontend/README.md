@@ -1,100 +1,138 @@
-# Task Management Frontend
+# Task Management — Frontend
 
-A modern task management application built with Vite, React, and TypeScript.
+React application for the Task Management app: Vite, TypeScript, and Axios for the backend API. Supports task list/create/complete and admin CSV export with status polling.
 
-## Features
+---
 
-- ⚡️ Vite for fast development and building
-- ⚛️ React 18 with TypeScript
-- 🔧 Axios for API communication
-- 📦 TypeScript with strict type checking
-- 🎯 Path aliases configured (`@/` for `src/`)
-- 🔐 Environment-based configuration
+## Prerequisites
 
-## Project Structure
+- Node.js 18+
+- Backend API running (see [backend/README.md](../backend/README.md) and [root README](../README.md))
 
-```
-task-management-FE/
-├── src/
-│   ├── api/              # API client configuration
-│   │   ├── client.ts     # Axios instance and API client class
-│   │   └── index.ts      # API exports
-│   ├── config/           # Configuration files
-│   │   └── env.ts        # Environment variables
-│   ├── types/            # TypeScript type definitions
-│   │   └── api.types.ts  # API-related types
-│   ├── App.tsx           # Main App component
-│   ├── main.tsx          # Application entry point
-│   ├── index.css         # Global styles
-│   └── vite-env.d.ts     # Vite environment types
-├── .env                  # Environment variables (create from .env.example)
-├── .env.example          # Example environment variables
-├── package.json          # Dependencies and scripts
-├── tsconfig.json         # TypeScript configuration
-└── vite.config.ts        # Vite configuration
-```
+---
 
-## Getting Started
+## Setup
 
-### Prerequisites
+Run these commands from the **frontend** directory (`frontend/`).
 
-- Node.js 18+ and npm
+### 1. Install dependencies
 
-### Installation
-
-1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Create environment file:
+### 2. Environment (optional)
+
+The app works with defaults (`VITE_API_BASE_URL=http://localhost:3000/api`). To override:
+
 ```bash
 cp .env.example .env
 ```
 
-3. Update `.env` with your API configuration:
+Edit `.env` if needed:
+
 ```env
 VITE_API_BASE_URL=http://localhost:3000/api
 VITE_API_TIMEOUT=10000
 ```
 
-### Development
+### 3. Run the app
 
-Start the development server:
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The app is available at **http://localhost:5173**. Log in with the Tenant ID and User ID from the backend seed script (see [root README](../README.md)).
 
-### Build
+---
 
-Build for production:
-```bash
-npm run build
+## Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run dev` | Start Vite dev server |
+| `npm run build` | TypeScript check + production build |
+| `npm run preview` | Serve the production build locally |
+| `npm run lint` | Run ESLint |
+
+---
+
+## Authentication and API
+
+The frontend does not use a real auth provider. After “login” (e.g. Dev Login or Login page), it stores in `localStorage`:
+
+- `tenantId` — sent as `x-tenant-id`
+- `userId` — sent as `x-user-id`
+- (optional) `authToken` — sent as `Authorization: Bearer ...`
+
+The API client in `src/api/client.ts` attaches these headers to every request. The backend uses them for tenant isolation and user/role checks. See the [root README](../README.md) for API details.
+
+---
+
+## Features
+
+- **Tasks**: List, create, and mark tasks complete. Data is scoped by tenant.
+- **Admin export**: If the current user has role `admin`, an “Export CSV” section is shown. It triggers an export, polls `GET /api/exports/:id` every 2 seconds until completed or failed, then offers a download. The download URL is valid for 1 minute; after that it returns 404 (see root README).
+
+---
+
+## Project structure
+
+```
+frontend/
+├── src/
+│   ├── api/              # API client and endpoints
+│   │   ├── client.ts     # Axios instance, interceptors (tenant/user headers)
+│   │   ├── tasks.ts      # Task list, create, update
+│   │   ├── users.ts      # Current user
+│   │   ├── exports.ts    # Trigger export, get status, download file
+│   │   └── index.ts
+│   ├── components/       # UI components
+│   │   ├── LoginPage.tsx
+│   │   ├── DevLogin.tsx
+│   │   ├── TaskList.tsx
+│   │   ├── TaskItem.tsx
+│   │   ├── CreateTaskForm.tsx
+│   │   ├── AdminExportSection.tsx   # Export + polling + download
+│   │   └── LoadingScreen.tsx
+│   ├── contexts/         # React context
+│   │   ├── AuthContext.tsx
+│   │   ├── AuthContextState.ts
+│   │   ├── useAuth.ts
+│   │   └── index.ts
+│   ├── config/
+│   │   └── env.ts        # VITE_* env and defaults
+│   ├── types/            # TypeScript types
+│   │   ├── api.types.ts
+│   │   ├── task.types.ts
+│   │   ├── user.types.ts
+│   │   └── export.types.ts
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── package.json
+├── tsconfig.json
+└── vite.config.ts
 ```
 
-### Preview
+---
 
-Preview the production build:
+## Environment variables
+
+Variables must be prefixed with `VITE_` to be available in the app.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_API_BASE_URL` | Backend API base URL | `http://localhost:3000/api` |
+| `VITE_API_TIMEOUT` | Request timeout (ms) | `10000` |
+
+---
+
+## Build and preview
+
 ```bash
+npm run build
 npm run preview
 ```
 
-## TypeScript Configuration
-
-- Strict type checking enabled
-- Path aliases configured (`@/` maps to `src/`)
-- React JSX transform enabled
-- Modern ES2020 target
-
-## Environment Variables
-
-All environment variables must be prefixed with `VITE_` to be accessible in the application.
-
-- `VITE_API_BASE_URL`: Base URL for the API (default: `http://localhost:3000/api`)
-- `VITE_API_TIMEOUT`: Request timeout in milliseconds (default: `10000`)
-
-## License
-
-MIT
+Preview serves the built app (default port may differ from 5173). Use this to test the production build against your backend.
